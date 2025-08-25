@@ -33,7 +33,7 @@ A Node.js tool to bulk archive emails in Pipedrive via their API, since the UI d
    ```
 
 4. Edit `.env` and add your Pipedrive API token:
-   ```
+   ```ini
    PIPEDRIVE_API_TOKEN=your_api_token_here
    PIPEDRIVE_DOMAIN=yourcompany.pipedrive.com
    ```
