@@ -6,8 +6,9 @@ A Node.js tool to bulk archive emails in Pipedrive via their API, since the UI d
 
 ## Features
 
-- Fetches all email threads from your Pipedrive inbox
+- Fetches all email threads from your Pipedrive inbox or sent folder
 - Bulk archives unarchived emails
+- Support for archiving both inbox and sent emails
 - Dry-run mode to preview what will be archived
 - Interactive confirmation before archiving
 - Progress tracking and statistics
@@ -55,6 +56,12 @@ This will:
 3. Ask for confirmation before archiving
 4. Archive all unarchived emails
 
+### Archive sent emails
+```bash
+npm start -- --sent
+```
+Archives sent emails instead of inbox emails.
+
 ### Dry run mode
 Preview what will be archived without making changes:
 ```bash
@@ -69,6 +76,16 @@ Archive without the confirmation prompt:
 npm start -- --yes
 # or
 npm start -- -y
+```
+
+### Combine options
+You can combine different options:
+```bash
+# Dry run for sent emails
+npm start -- --sent --dry-run
+
+# Archive sent emails without confirmation
+npm start -- --sent --yes
 ```
 
 ### Help

@@ -9,10 +9,11 @@ import inquirer from 'inquirer';
 dotenv.config();
 
 class PipedriveEmailArchiver {
-  constructor() {
+  constructor(folder = 'inbox') {
     this.apiToken = process.env.PIPEDRIVE_API_TOKEN;
     this.domain = process.env.PIPEDRIVE_DOMAIN || 'api.pipedrive.com';
     this.baseUrl = `https://${this.domain}/api/v1`;
+    this.folder = folder;
 
     if (!this.apiToken) {
       console.error(chalk.red('Error: PIPEDRIVE_API_TOKEN not found in .env file'));
@@ -28,7 +29,7 @@ class PipedriveEmailArchiver {
   }
 
   async fetchMailThreads(start = 0, limit = 100) {
-    const spinner = ora(`Fetching email threads (offset: ${start})...`).start();
+    const spinner = ora(`Fetching email threads from ${this.folder} (offset: ${start})...`).start();
 
     try {
       const response = await axios.get(`${this.baseUrl}/mailbox/mailThreads`, {
@@ -36,11 +37,11 @@ class PipedriveEmailArchiver {
           api_token: this.apiToken,
           start,
           limit,
-          folder: 'inbox'
+          folder: this.folder
         }
       });
 
-      spinner.succeed(`Fetched ${response.data.data?.length || 0} threads`);
+      spinner.succeed(`Fetched ${response.data.data?.length || 0} threads from ${this.folder}`);
       return response.data;
     } catch (error) {
       spinner.fail('Failed to fetch email threads');
@@ -83,7 +84,7 @@ class PipedriveEmailArchiver {
     let start = 0;
     const limit = 100;
 
-    console.log(chalk.blue('\n📧 Fetching all email threads from Pipedrive...\n'));
+    console.log(chalk.blue(`\n📧 Fetching all email threads from ${this.folder.toUpperCase()}...\n`));
 
     while (hasMore) {
       const data = await this.fetchMailThreads(start, limit);
@@ -230,7 +231,8 @@ function parseArgs() {
   const options = {
     help: args.includes('--help') || args.includes('-h'),
     dryRun: args.includes('--dry-run'),
-    yes: args.includes('--yes') || args.includes('-y')
+    yes: args.includes('--yes') || args.includes('-y'),
+    sent: args.includes('--sent')
   };
 
   if (options.help) {
@@ -239,11 +241,13 @@ function parseArgs() {
     console.log('Options:');
     console.log('  --dry-run    Show what would be archived without making changes');
     console.log('  --yes, -y    Skip confirmation prompt');
+    console.log('  --sent       Archive sent emails instead of inbox');
     console.log('  --help, -h   Show this help message\n');
     console.log('Examples:');
-    console.log('  npm start                 # Interactive mode');
+    console.log('  npm start                 # Archive inbox emails (interactive)');
+    console.log('  npm start --sent          # Archive sent emails (interactive)');
     console.log('  npm start --dry-run       # Preview what will be archived');
-    console.log('  npm start --yes           # Archive without confirmation\n');
+    console.log('  npm start --sent --yes    # Archive sent emails without confirmation\n');
     process.exit(0);
   }
 
@@ -252,5 +256,6 @@ function parseArgs() {
 
 // Main execution
 const options = parseArgs();
-const archiver = new PipedriveEmailArchiver();
+const folder = options.sent ? 'sent' : 'inbox';
+const archiver = new PipedriveEmailArchiver(folder);
 archiver.run();
